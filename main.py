@@ -64,7 +64,7 @@ def get_all(room_id: int):
 @app.get("/getdata/pet_active/{room_id}")
 def get_pet_active(room_id: int):
     result = collection.find_one({"room_id": room_id})
-    return {"pet_active": result["pet_active"]}
+    return result["pet_active"]
 
 
 @app.get("/getdata/commands/{room_id}")
