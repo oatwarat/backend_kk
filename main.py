@@ -64,7 +64,6 @@ def get_all(room_id: int):
             "tank_level": result["tank_level"],
             "pet_active": result["pet_active"],
             "auto_refill": result["auto_refill"],
-            "manual_refill": result["manual_refill"],
             "open_door": result["open_door"],
             "PIR_on": result["PIR_on"]}
 
@@ -78,7 +77,6 @@ def get_pet_active(room_id: int):
 def get_commands(room_id: int):
     result = collection.find_one({"room_id": room_id})
     return {"auto_refill": result["auto_refill"],
-            "manual_refill": result["manual_refill"],
             "open_door": result["open_door"],
             "PIR_on": result["PIR_on"]}
 
@@ -108,11 +106,6 @@ def update_pet_active(room_id: int,pet_active: bool):
 def update_auto_refill(room_id: int,auto_refill: bool):
     collection.update_one({"room_id":room_id},{"$set":{"auto_refill": auto_refill}})
     return "set auto refill " + str(auto_refill)
-
-@app.put("/update/manual_refill/{room_id}/{manual_refill}")
-def update_manual_refill(room_id: int,manual_refill: bool):
-    collection.update_one({"room_id":room_id},{"$set":{"manual_refill": manual_refill}})
-    return "set manual refill " + str(manual_refill)
 
 @app.put("/update/open_door/{room_id}/{open_door}")
 def update_open_door(room_id: int,open_door: bool):
