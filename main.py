@@ -28,6 +28,7 @@ class Device(BaseModel):
     pet_active: bool        #1 active, 0 no
     auto_refill: bool       #1 yes, 0 no
     manual_refill: bool     #1 yes, 0 no
+    open_door: bool         #1 open door, 0 close door
     PIR_on: bool            #1 yes, 0 no
 
 @app.get("/")
@@ -43,6 +44,7 @@ def newdevice(device: Device):
         "pet_active": device.pet_active,
         "auto_refill": device.auto_refill,
         "manual_refill": device.manual_refill,
+        "open_door": device.open_door,
         "PIR_on": device.PIR_on
     }
     collection.insert_one(body)
@@ -63,6 +65,7 @@ def get_all(room_id: int):
             "pet_active": result["pet_active"],
             "auto_refill": result["auto_refill"],
             "manual_refill": result["manual_refill"],
+            "open_door": result["open_door"],
             "PIR_on": result["PIR_on"]}
 
 @app.get("/getdata/pet_active/{room_id}")
@@ -76,6 +79,7 @@ def get_commands(room_id: int):
     result = collection.find_one({"room_id": room_id})
     return {"auto_refill": result["auto_refill"],
             "manual_refill": result["manual_refill"],
+            "open_door": result["open_door"],
             "PIR_on": result["PIR_on"]}
 
 
@@ -109,6 +113,11 @@ def update_auto_refill(room_id: int,auto_refill: bool):
 def update_manual_refill(room_id: int,manual_refill: bool):
     collection.update_one({"room_id":room_id},{"$set":{"manual_refill": manual_refill}})
     return "set manual refill " + str(manual_refill)
+
+@app.put("/update/open_door/{room_id}/{open_door}")
+def update_open_door(room_id: int,open_door: bool):
+    collection.update_one({"room_id":room_id},{"$set":{"open_door": open_door}})
+    return "set door " + str(open_door)
 
 @app.put("/update/PIR_on/{room_id}/{PIR_on}")
 def update_PIR_on(room_id: int,PIR_on: bool):
