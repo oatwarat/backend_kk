@@ -11,12 +11,14 @@ usrn = os.getenv("user")
 pswd = os.getenv("password")
 DATABASE_NAME = "exceed12"
 COLLECTION_NAME = "kk devices"
+LOG_COLLECTION_NAME = "pet"
 MONGO_DB_URL = f"mongodb://{usrn}:{pswd}@mongo.exceed19.online:8443/?authMechanism=DEFAULT"
 MONGO_DB_PORT = 8443
 
 client = MongoClient(f"{MONGO_DB_URL}")
 db = client[DATABASE_NAME]
 collection = db[COLLECTION_NAME]
+log_collection = db[LOG_COLLECTION_NAME]
 app = FastAPI()
 
 class Device(BaseModel):
@@ -45,7 +47,8 @@ def newdevice(device: Device):
 @app.delete("/removedevice/{room_id}")
 def removedevice(room_id: int):
     collection.delete_one({"room_id":room_id})
-    return "deleted room id " + str(room_id)
+    log_collection.delete_many({"room_id":room_id})
+    return "deleted room id " + str(room_id) + " and all timestamp logs"
 
 @app.get("/getdata/all/{room_id}")
 def get_all(room_id: int):
