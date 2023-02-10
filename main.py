@@ -23,12 +23,16 @@ app = FastAPI()
 
 class Device(BaseModel):
     room_id: int            #room id
-    tray_level: bool        #1 empty, 0 full
-    tank_level: bool        #1 empty, 0 full
+    tray_level: bool        #1 empty, 0 full :20%
+    tank_level: bool        #1 empty, 0 full :25%
     pet_active: bool        #1 active, 0 no
     auto_refill: bool       #1 yes, 0 no
     manual_refill: bool     #1 yes, 0 no
     PIR_on: bool            #1 yes, 0 no
+
+@app.get("/")
+def homepage():
+    return "home"
 
 @app.post("/newdevice")
 def newdevice(device: Device):
