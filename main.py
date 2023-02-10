@@ -27,7 +27,6 @@ class Device(BaseModel):
     tank_level: bool        #1 empty, 0 full :25%
     pet_active: bool        #1 active, 0 no
     auto_refill: bool       #1 yes, 0 no
-    manual_refill: bool     #1 yes, 0 no
     open_door: bool         #1 open door, 0 close door
     PIR_on: bool            #1 yes, 0 no
 
@@ -43,7 +42,6 @@ def newdevice(device: Device):
         "tank_level": device.tank_level,
         "pet_active": device.pet_active,
         "auto_refill": device.auto_refill,
-        "manual_refill": device.manual_refill,
         "open_door": device.open_door,
         "PIR_on": device.PIR_on
     }
