@@ -5,6 +5,7 @@ from pymongo import MongoClient
 import dotenv
 import os
 
+
 dotenv.load_dotenv(".env")
 usrn = os.getenv("user")
 pswd = os.getenv("password")
@@ -40,6 +41,11 @@ def newdevice(device: Device):
     }
     collection.insert_one(body)
     return "inserted room id " + str(device.room_id)
+
+@app.delete("/removedevice/{room_id}")
+def removedevice(room_id: int):
+    collection.delete_one({"room_id":room_id})
+    return "deleted room id " + str(room_id)
 
 @app.get("/getdata/all/{room_id}")
 def get_all(room_id: int):
