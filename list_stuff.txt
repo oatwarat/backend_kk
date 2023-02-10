@@ -1,0 +1,18 @@
+get
+/getdata/all/{room_id}
+/getdata/pet_active/{room_id}
+/getdata/commands/{room_id}
+/getdata/levels/{room_id}
+
+post
+/timestamp     		
+/newdevice
+#รับเป็น body
+
+put
+/update/tray_level/{room_id}/{tray_level}
+/update/tank_level/{room_id}/{tank_level}
+/update/pet_active/{room_id}/{pet_active}
+/update/auto_refill/{room_id}/{auto_refill}
+/update/manual_refill/{room_id}/{manual_refill}
+/update/PIR_on/{room_id}/{PIR_on}
