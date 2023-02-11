@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 import dotenv
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 dotenv.load_dotenv(".env")
 usrn = os.getenv("user")
@@ -21,7 +22,14 @@ log_collection = db[LOG_COLLECTION_NAME]
 app = FastAPI()
 router = APIRouter()
 
-
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_header=["*"],
+)
 
 class Device(BaseModel):
     room_id: int            #room id
@@ -143,6 +151,7 @@ def format_time(total_time_in_seconds):
 
     return time_string
 
+
 @app.get("/rooms/time")
 async def get_room_time():
     today = datetime.utcnow().date()
@@ -160,28 +169,31 @@ async def get_room_time():
         total_time_month = 0
         total_time_year = 0
         room_data = log_collection.find({"room_id": room})
+        last_timestamp = None
         for data in room_data:
             timestamp = datetime.fromtimestamp(float(data["timestamp"]))
-            if timestamp.date() == today:
-                total_time_today += data["count"]
-            elif timestamp.date() == yesterday:
-                total_time_yesterday += data["count"]
-            elif timestamp.date() >= week_ago:
-                total_time_week += data["count"]
-            elif timestamp.date() >= month_ago:
-                total_time_month += data["count"]
-            elif timestamp.date() >= year_ago:
-                total_time_year += data["count"]
+            if last_timestamp:
+                time_diff = (timestamp - last_timestamp).total_seconds()
+                if timestamp.date() == today:
+                    total_time_today += time_diff
+                elif timestamp.date() == yesterday:
+                    total_time_yesterday += time_diff
+                elif timestamp.date() >= week_ago:
+                    total_time_week += time_diff
+                elif timestamp.date() >= month_ago:
+                    total_time_month += time_diff
+                elif timestamp.date() >= year_ago:
+                    total_time_year += time_diff
+            last_timestamp = timestamp
 
         rooms_time.append({
             "room_id": room,
-            "total_time_today": format_time(total_time_today),
-            "total_time_yesterday": format_time(total_time_yesterday),
-            "total_time_week": format_time(total_time_week),
-            "total_time_month": format_time(total_time_month),
-            "total_time_year": format_time(total_time_year)
+            "today": format_time(total_time_today),
+            "yesterday": format_time(total_time_yesterday),
+            "week": format_time(total_time_week),
+            "month": format_time(total_time_month),
+            "year": format_time(total_time_year)
         })
-
     return rooms_time
 
 @app.post("/add_time")
