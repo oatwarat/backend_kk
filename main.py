@@ -72,14 +72,12 @@ def get_pet_active(room_id: int):
     result = collection.find_one({"room_id": room_id})
     return result["pet_active"]
 
-
 @app.get("/getdata/commands/{room_id}")
 def get_commands(room_id: int):
     result = collection.find_one({"room_id": room_id})
     return {"auto_refill": result["auto_refill"],
             "open_door": result["open_door"],
             "PIR_on": result["PIR_on"]}
-
 
 @app.get("/getdata/levels/{room_id}")
 def get_levels(room_id: int):
@@ -119,9 +117,7 @@ def update_PIR_on(room_id: int,PIR_on: bool):
 
 class Time(BaseModel):
     room_id: int
-    count: int
     timestamp: int
-
 
 def format_time(total_time_in_seconds):
     time_in_seconds = int(total_time_in_seconds)
@@ -146,7 +142,6 @@ def format_time(total_time_in_seconds):
         time_string = f"{seconds} second{'s' if seconds > 1 else ''}"
 
     return time_string
-
 
 @app.get("/rooms/time")
 async def get_room_time():
@@ -193,7 +188,6 @@ async def get_room_time():
 def add_time(time: Time):
     body = {
         "room_id": time.room_id,
-        "count": time.count,
         "timestamp": time.timestamp
     }
     log_collection.insert_one(body)
