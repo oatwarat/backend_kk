@@ -1,41 +1,38 @@
+import pymongo
 from fastapi import FastAPI
 from pymongo import MongoClient
+from dotenv import load_dotenv
 import os
 from datetime import date, datetime, timedelta
 
 app = FastAPI()
-
+load_dotenv(".env")
 DATABASE_NAME = "exceed12"
 COLLECTION_NAME = "time"
-usrn = os.getenv("userrname")
+usrn = os.getenv("username")
 pswd = os.getenv("password")
+print(usrn)
+print(pswd)
 MONGO_DB_URL = f"mongodb://{usrn}:{pswd}@mongo.exceed19.online:8443/?authMechanism=DEFAULT"
 client = MongoClient(MONGO_DB_URL)
 
 db = client[DATABASE_NAME]
 collection = db[COLLECTION_NAME]
 
-
 def format_time(total_time_in_seconds):
     time_in_seconds = int(total_time_in_seconds)
     minutes, seconds = divmod(time_in_seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    months, days = divmod(days, 30)
-    years, months = divmod(months, 12)
 
     time_string = ""
-    if years > 0:
-        time_string = f"{years} year{'s' if years > 1 else ''}"
-    elif months > 0:
-        time_string = f"{months} month{'s' if months > 1 else ''}"
-    elif days > 0:
+    if days > 0:
         time_string = f"{days} day{'s' if days > 1 else ''}"
     elif hours > 0:
         time_string = f"{hours} hour{'s' if hours > 1 else ''}"
     elif minutes > 0:
         time_string = f"{minutes} minute{'s' if minutes > 1 else ''}"
-    elif seconds > 0:
+    else:
         time_string = f"{seconds} second{'s' if seconds > 1 else ''}"
 
     return time_string
@@ -60,7 +57,7 @@ async def get_room_time():
         room_data = collection.find({"room_id": room})
         last_timestamp = None
         for data in room_data:
-            timestamp = datetime.fromtimestamp(float(data["timestamp"]["$numberDouble"]))
+            timestamp = datetime.fromtimestamp(float(data["timestamp"]))
             if last_timestamp:
                 time_diff = (timestamp - last_timestamp).total_seconds()
                 if timestamp.date() == today:
@@ -73,7 +70,7 @@ async def get_room_time():
                     total_time_month += time_diff
                 elif timestamp.date() >= year_ago:
                     total_time_year += time_diff
-                last_timestamp = timestamp
+            last_timestamp = timestamp
 
         rooms_time.append({
             "room_id": room,
