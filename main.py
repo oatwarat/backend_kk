@@ -189,4 +189,4 @@ async def get_room_time():
             "total_time_year": format_time(total_time_year)
         })
 
-    return {"rooms_time": rooms_time}
+    return rooms_time
