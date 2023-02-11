@@ -60,7 +60,7 @@ async def get_room_time():
         room_data = collection.find({"room_id": room})
         last_timestamp = None
         for data in room_data:
-            timestamp = datetime.fromtimestamp(int(data["timestamp"]["$numberDouble"]))
+            timestamp = datetime.fromtimestamp(float(data["timestamp"]["$numberDouble"]))
             if last_timestamp:
                 time_diff = (timestamp - last_timestamp).total_seconds()
                 if timestamp.date() == today:
@@ -75,13 +75,13 @@ async def get_room_time():
                     total_time_year += time_diff
                 last_timestamp = timestamp
 
-                rooms_time.append({
-                    "room_id": room,
-                    "today": format_time(total_time_today),
-                    "yesterday": format_time(total_time_yesterday),
-                    "week_ago": format_time(total_time_week),
-                    "month_ago": format_time(total_time_month),
-                    "year_ago": format_time(total_time_year),
-                })
+        rooms_time.append({
+            "room_id": room,
+            "today": format_time(total_time_today),
+            "yesterday": format_time(total_time_yesterday),
+            "week_ago": format_time(total_time_week),
+            "month_ago": format_time(total_time_month),
+            "year_ago": format_time(total_time_year),
+        })
 
-            return {"rooms_time": rooms_time}
+    return {"rooms_time": rooms_time}
