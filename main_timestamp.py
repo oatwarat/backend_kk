@@ -43,7 +43,7 @@ def format_time(total_time_in_seconds):
 
 @app.get("/rooms/time")
 async def get_room_time():
-    today = datetime.utcnow().date()
+    today = datetime.now().date()
     yesterday = today - timedelta(days=1)
     week_ago = today - timedelta(weeks=1)
     month_ago = today - timedelta(days=30)
@@ -73,14 +73,17 @@ async def get_room_time():
                     total_time_month += time_diff
                 elif timestamp.date() >= year_ago:
                     total_time_year += time_diff
-            last_timestamp = timestamp
 
-        rooms_time.append({
-            "room_id": room,
-            "today": format_time(total_time_today),
-            "yesterday": format_time(total_time_yesterday),
-            "week": format_time(total_time_week),
-            "month": format_time(total_time_month),
-            "year": format_time(total_time_year)
-        })
-    return rooms_time
+                last_timestamp = timestamp
+
+            room_time = {
+                "room_id": room,
+                "time_today": format_time(total_time_today),
+                "time_yesterday": format_time(total_time_yesterday),
+                "time_week": format_time(total_time_week),
+                "time_month": format_time(total_time_month),
+                "time_year": format_time(total_time_year)
+            }
+            rooms_time.append(room_time)
+
+        return {"rooms_time": rooms_time}
