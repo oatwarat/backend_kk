@@ -22,7 +22,7 @@ log_collection = db[LOG_COLLECTION_NAME]
 app = FastAPI()
 router = APIRouter()
 
-origins = ["http://localhost:5173"]
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
