@@ -11,13 +11,12 @@ DATABASE_NAME = "exceed12"
 COLLECTION_NAME = "time"
 usrn = os.getenv("username")
 pswd = os.getenv("password")
-print(usrn)
-print(pswd)
 MONGO_DB_URL = f"mongodb://{usrn}:{pswd}@mongo.exceed19.online:8443/?authMechanism=DEFAULT"
 client = MongoClient(MONGO_DB_URL)
 
 db = client[DATABASE_NAME]
 collection = db[COLLECTION_NAME]
+
 
 def format_time(total_time_in_seconds):
     time_in_seconds = int(total_time_in_seconds)
@@ -28,12 +27,12 @@ def format_time(total_time_in_seconds):
     time_string = ""
     if days > 0:
         time_string = f"{days} day{'s' if days > 1 else ''}"
-    elif hours > 0:
-        time_string = f"{hours} hour{'s' if hours > 1 else ''}"
-    elif minutes > 0:
-        time_string = f"{minutes} minute{'s' if minutes > 1 else ''}"
-    else:
-        time_string = f"{seconds} second{'s' if seconds > 1 else ''}"
+    if hours > 0:
+        time_string = time_string + f" {hours} hour{'s' if hours > 1 else ''}"
+    if minutes > 0:
+        time_string = time_string + f" {minutes} minute{'s' if minutes > 1 else ''}"
+    if seconds > 0 or not time_string:
+        time_string = time_string + f" {seconds} second{'s' if seconds > 1 else ''}"
 
     return time_string
 
@@ -74,11 +73,11 @@ async def get_room_time():
 
         rooms_time.append({
             "room_id": room,
-            "today": format_time(total_time_today),
-            "yesterday": format_time(total_time_yesterday),
-            "week_ago": format_time(total_time_week),
-            "month_ago": format_time(total_time_month),
-            "year_ago": format_time(total_time_year),
+            "total_time_today": format_time(total_time_today),
+            "total_time_yesterday": format_time(total_time_yesterday),
+            "total_time_week": format_time(total_time_week),
+            "total_time_month": format_time(total_time_month),
+            "total_time_year": format_time(total_time_year)
         })
 
     return {"rooms_time": rooms_time}
