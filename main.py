@@ -1,17 +1,16 @@
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, APIRouter
 from datetime import date, datetime, timedelta
 from pydantic import BaseModel
 from pymongo import MongoClient
 import dotenv
 import os
 
-
 dotenv.load_dotenv(".env")
 usrn = os.getenv("user")
 pswd = os.getenv("password")
 DATABASE_NAME = "exceed12"
 COLLECTION_NAME = "kk devices"
-LOG_COLLECTION_NAME = "pet"
+LOG_COLLECTION_NAME = "time"
 MONGO_DB_URL = f"mongodb://{usrn}:{pswd}@mongo.exceed19.online:8443/?authMechanism=DEFAULT"
 MONGO_DB_PORT = 8443
 
@@ -20,6 +19,9 @@ db = client[DATABASE_NAME]
 collection = db[COLLECTION_NAME]
 log_collection = db[LOG_COLLECTION_NAME]
 app = FastAPI()
+router = APIRouter()
+
+
 
 class Device(BaseModel):
     room_id: int            #room id
@@ -114,3 +116,85 @@ def update_open_door(room_id: int,open_door: bool):
 def update_PIR_on(room_id: int,PIR_on: bool):
     collection.update_one({"room_id":room_id},{"$set":{"PIR_on": PIR_on}})
     return "set PIR " + str(PIR_on)
+
+class Time(BaseModel):
+    room_id: int
+    count: int
+    timestamp: int
+
+
+def format_time(total_time_in_seconds):
+    time_in_seconds = int(total_time_in_seconds)
+    minutes, seconds = divmod(time_in_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    months, days = divmod(days, 30)
+    years, months = divmod(months, 12)
+
+    time_string = ""
+    if years > 0:
+        time_string = f"{years} year{'s' if years > 1 else ''}"
+    elif months > 0:
+        time_string = f"{months} month{'s' if months > 1 else ''}"
+    elif days > 0:
+        time_string = f"{days} day{'s' if days > 1 else ''}"
+    elif hours > 0:
+        time_string = f"{hours} hour{'s' if hours > 1 else ''}"
+    elif minutes > 0:
+        time_string = f"{minutes} minute{'s' if minutes > 1 else ''}"
+    elif seconds > 0:
+        time_string = f"{seconds} second{'s' if seconds > 1 else ''}"
+
+    return time_string
+
+
+@app.get("/rooms/time")
+async def get_room_time():
+    today = datetime.utcnow().date()
+    yesterday = today - timedelta(days=1)
+    week_ago = today - timedelta(weeks=1)
+    month_ago = today - timedelta(days=30)
+    year_ago = today - timedelta(days=365)
+
+    rooms_time = []
+    rooms = log_collection.distinct("room_id")
+    for room in rooms:
+        total_time_today = 0
+        total_time_yesterday = 0
+        total_time_week = 0
+        total_time_month = 0
+        total_time_year = 0
+        room_data = log_collection.find({"room_id": room})
+        for data in room_data:
+            timestamp = datetime.fromtimestamp(float(data["timestamp"]))
+            if timestamp.date() == today:
+                total_time_today += data["count"]
+            elif timestamp.date() == yesterday:
+                total_time_yesterday += data["count"]
+            elif timestamp.date() >= week_ago:
+                total_time_week += data["count"]
+            elif timestamp.date() >= month_ago:
+                total_time_month += data["count"]
+            elif timestamp.date() >= year_ago:
+                total_time_year += data["count"]
+
+        rooms_time.append({
+            "room_id": room,
+            "total_time_today": format_time(total_time_today),
+            "total_time_yesterday": format_time(total_time_yesterday),
+            "total_time_week": format_time(total_time_week),
+            "total_time_month": format_time(total_time_month),
+            "total_time_year": format_time(total_time_year)
+        })
+
+    return rooms_time
+
+@app.post("/add_time")
+def add_time(time: Time):
+    body = {
+        "room_id": time.room_id,
+        "count": time.count,
+        "timestamp": time.timestamp
+    }
+    log_collection.insert_one(body)
+    return "inserted timestamp for room " + str(time.room_id)
