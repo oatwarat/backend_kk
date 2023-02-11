@@ -132,29 +132,23 @@ def format_time(total_time_in_seconds):
     minutes, seconds = divmod(time_in_seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    months, days = divmod(days, 30)
-    years, months = divmod(months, 12)
 
     time_string = ""
-    if years > 0:
-        time_string = f"{years} year{'s' if years > 1 else ''}"
-    elif months > 0:
-        time_string = f"{months} month{'s' if months > 1 else ''}"
-    elif days > 0:
+    if days > 0:
         time_string = f"{days} day{'s' if days > 1 else ''}"
-    elif hours > 0:
-        time_string = f"{hours} hour{'s' if hours > 1 else ''}"
-    elif minutes > 0:
-        time_string = f"{minutes} minute{'s' if minutes > 1 else ''}"
-    elif seconds > 0:
-        time_string = f"{seconds} second{'s' if seconds > 1 else ''}"
+    if hours > 0:
+        time_string = time_string + f" {hours} hour{'s' if hours > 1 else ''}"
+    if minutes > 0:
+        time_string = time_string + f" {minutes} minute{'s' if minutes > 1 else ''}"
+    if seconds > 0 or not time_string:
+        time_string = time_string + f" {seconds} second{'s' if seconds > 1 else ''}"
 
     return time_string
 
 
 @app.get("/rooms/time")
 async def get_room_time():
-    today = datetime.utcnow().date()
+    today = datetime.now().date()
     yesterday = today - timedelta(days=1)
     week_ago = today - timedelta(weeks=1)
     month_ago = today - timedelta(days=30)
@@ -188,19 +182,11 @@ async def get_room_time():
 
         rooms_time.append({
             "room_id": room,
-            "today": format_time(total_time_today),
-            "yesterday": format_time(total_time_yesterday),
-            "week": format_time(total_time_week),
-            "month": format_time(total_time_month),
-            "year": format_time(total_time_year)
+            "total_time_today": format_time(total_time_today),
+            "total_time_yesterday": format_time(total_time_yesterday),
+            "total_time_week": format_time(total_time_week),
+            "total_time_month": format_time(total_time_month),
+            "total_time_year": format_time(total_time_year)
         })
-    return rooms_time
 
-@app.post("/add_time")
-def add_time(time: Time):
-    body = {
-        "room_id": time.room_id,
-        "timestamp": time.timestamp
-    }
-    log_collection.insert_one(body)
-    return "inserted timestamp for room " + str(time.room_id)
+    return {"rooms_time": rooms_time}
