@@ -46,6 +46,8 @@ def homepage():
 
 @app.post("/newdevice")
 def newdevice(device: Device):
+    if collection.find({"room_id":device.room_id}):
+        return "device already exists"
     body = {
         "room_id": device.room_id,
         "tray_level": device.tray_level,
