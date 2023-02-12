@@ -46,7 +46,8 @@ def homepage():
 
 @app.post("/newdevice")
 def newdevice(device: Device):
-    if collection.find({"room_id":device.room_id}):
+    if len(list(collection.find({"room_id": device.room_id}))) >= 1:
+        #print(list(collection.find({"room_id": device.room_id})))
         return "device already exists"
     body = {
         "room_id": device.room_id,
@@ -58,7 +59,15 @@ def newdevice(device: Device):
         "PIR_on": device.PIR_on
     }
     collection.insert_one(body)
-    return "inserted room id " + str(device.room_id)
+    return {
+        "room_id": device.room_id,
+        "tray_level": device.tray_level,
+        "tank_level": device.tank_level,
+        "pet_active": device.pet_active,
+        "auto_refill": device.auto_refill,
+        "open_door": device.open_door,
+        "PIR_on": device.PIR_on
+    }
 
 @app.delete("/removedevice/{room_id}")
 def removedevice(room_id: int):
