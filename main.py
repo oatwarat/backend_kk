@@ -194,7 +194,7 @@ async def get_room_time():
     return rooms_time
 
 
-@app.post("add_time")
+@app.post("/add_time")
 def add_time(time: Time):
     body = {"room_id": time.room_id,
             "timestamp": time.timestamp}
