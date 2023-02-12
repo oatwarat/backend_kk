@@ -86,6 +86,23 @@ def get_all(room_id: int):
             "open_door": result["open_door"],
             "PIR_on": result["PIR_on"]}
 
+@app.get("/getdata/allall")
+def get_all():
+    result = []
+    for room in collection.distinct("room_id"):
+        r = collection.find_one({"room_id": room})
+        d = {
+            "room_id": r["room_id"],
+            "tray_level": r["tray_level"],
+            "tank_level": r["tank_level"],
+            "pet_active": r["pet_active"],
+            "auto_refill": r["auto_refill"],
+            "open_door": r["open_door"],
+            "PIR_on": r["PIR_on"]
+        }
+        result.append(d)
+    return result
+
 @app.get("/getdata/pet_active/{room_id}")
 def get_pet_active(room_id: int):
     result = collection.find_one({"room_id": room_id})
